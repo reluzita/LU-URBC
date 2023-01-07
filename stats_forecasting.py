@@ -2,11 +2,12 @@ import argparse
 import warnings
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 from tqdm import tqdm
 from math import sqrt
 from itertools import product
-from sklearn.metrics import mean_squared_error
+from sktime.performance_metrics.forecasting import MeanAbsoluteScaledError
 
 from tbats import TBATS
 from statsmodels.tsa.ar_model import AutoReg
@@ -103,17 +104,15 @@ if __name__=='__main__':
     predictions['TBATS'] = model.forecast(steps=args.horizon)
 
     # calculate errors
+    mase = MeanAbsoluteScaledError()
     for modelname in predictions:
-        errors[modelname] = sqrt(mean_squared_error(test, predictions[modelname]))
+        errors[modelname] = mase(test, np.array(predictions[modelname]), y_train=train)
 
-    errors_df = pd.DataFrame.from_dict(errors, orient='index', columns=['RMSE'])
+    errors_df = pd.DataFrame.from_dict(errors, orient='index', columns=['MASE'])
     errors_df.to_csv(f'results/errors/{args.dataset}_{args.seriesname}.csv')
 
-    # plot results
-    fig, ax = plt.subplots()
-    ax.plot(test, label='ground truth')
-    for modelname in predictions:
-        ax.plot(predictions[modelname], label=f'{modelname} (RMSE: {errors[modelname]:.2f})')
-    ax.legend()
-    ax.set_title(f'{args.dataset} forecast - {args.seriesname}')
-    fig.savefig(f'results/plots/{args.dataset}_{args.seriesname}.png')
+    # save predictions
+    predictions_df = pd.DataFrame.from_dict(predictions, orient='index', columns=list(data.index)[-args.horizon:])
+    predictions_df.to_csv(f'results/predictions/{args.dataset}_{args.seriesname}.csv')
+
+  
