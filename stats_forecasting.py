@@ -64,10 +64,10 @@ if __name__=='__main__':
     errors = {}
 
     # dummy prediction
-    print('Dummy prediction...')
-    predictions['dummy'] = []
-    for x in range(args.horizon):
-        predictions['dummy'].append(train[-1])
+    # print('Dummy prediction...')
+    # predictions['dummy'] = []
+    # for x in range(args.horizon):
+    #     predictions['dummy'].append(train[-1])
 
     # autoregressive model
     print('Fitting autoregressive model...')
@@ -104,15 +104,15 @@ if __name__=='__main__':
     predictions['TBATS'] = model.forecast(steps=args.horizon)
 
     # calculate errors
-    mase = MeanAbsoluteScaledError()
-    for modelname in predictions:
-        errors[modelname] = mase(test, np.array(predictions[modelname]), y_train=train)
+    # mase = MeanAbsoluteScaledError()
+    # for modelname in predictions:
+    #     errors[modelname] = mase(test, np.array(predictions[modelname]), y_train=train)
 
-    errors_df = pd.DataFrame.from_dict(errors, orient='index', columns=['MASE'])
-    errors_df.to_csv(f'results/errors/{args.dataset}_{args.seriesname}.csv')
+    # errors_df = pd.DataFrame.from_dict(errors, orient='index', columns=['MASE'])
+    # errors_df.to_csv(f'results/errors/{args.dataset}_{args.seriesname}.csv')
 
     # save predictions
     predictions_df = pd.DataFrame.from_dict(predictions, orient='index', columns=list(data.index)[-args.horizon:])
-    predictions_df.to_csv(f'results/predictions/{args.dataset}_{args.seriesname}.csv')
+    predictions_df.to_csv(f'results/predictions/{args.dataset}_{args.seriesname}_{args.horizon}.csv')
 
   
