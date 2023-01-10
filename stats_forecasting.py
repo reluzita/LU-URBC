@@ -18,19 +18,12 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 
 
 def optimize_ARIMA(order_list, exog):
-    """
-        Return dataframe with parameters and corresponding AIC
-        
-        order_list - list with (p, d, q) tuples
-        exog - the exogenous variable
-    """
-    
     results = []
     
     for order in tqdm(order_list):
         try:
             model = SARIMAX(exog, order=order).fit(disp=-1)
-        except:
+        except Exception:
             continue
             
         results.append([order, model, model.mse])
@@ -57,12 +50,6 @@ if __name__=='__main__':
 
     predictions = {}
     errors = {}
-
-    # dummy prediction
-    # print('Dummy prediction...')
-    # predictions['dummy'] = []
-    # for x in range(args.horizon):
-    #     predictions['dummy'].append(train[-1])
 
     # autoregressive model
     print('Fitting autoregressive model...')
@@ -95,14 +82,6 @@ if __name__=='__main__':
     print('Fitting TBATS model...')
     model = TBATS().fit(train)
     predictions['TBATS'] = model.forecast(steps=args.horizon)
-
-    # calculate errors
-    # mase = MeanAbsoluteScaledError()
-    # for modelname in predictions:
-    #     errors[modelname] = mase(test, np.array(predictions[modelname]), y_train=train)
-
-    # errors_df = pd.DataFrame.from_dict(errors, orient='index', columns=['MASE'])
-    # errors_df.to_csv(f'results/errors/{args.dataset}_{args.seriesname}.csv')
 
     # save predictions
     predictions_df = pd.DataFrame.from_dict(predictions, orient='index', columns=list(data.index)[-args.horizon:])
