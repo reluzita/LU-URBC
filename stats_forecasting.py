@@ -28,20 +28,15 @@ def optimize_ARIMA(order_list, exog):
     results = []
     
     for order in tqdm(order_list):
-        try: 
+        try:
             model = SARIMAX(exog, order=order).fit(disp=-1)
         except:
             continue
             
-        aic = model.aic
-        results.append([order, model.aic])
-        
-    result_df = pd.DataFrame(results)
-    result_df.columns = ['(p, d, q)', 'AIC']
-    #Sort in ascending order, lower AIC is better
-    result_df = result_df.sort_values(by='AIC', ascending=True).reset_index(drop=True)
+        results.append([order, model, model.mse])
     
-    return result_df
+    best_model = min(results, key=lambda x:x[2])
+    return best_model[1]
 
 if __name__=='__main__': 
     warnings.filterwarnings('ignore')
@@ -93,9 +88,7 @@ if __name__=='__main__':
         each = tuple(each)
         order_list.append(each)
         
-    result_df = optimize_ARIMA(order_list, exog=train)
-    best_order = result_df['(p, d, q)'][0]
-    model = SARIMAX(train, order=best_order).fit(disp=-1)
+    model = optimize_ARIMA(order_list, exog=train)
     predictions['ARMA'] = model.forecast(args.horizon)
 
     # TBATS
